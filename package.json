@@ -1,4 +1,9 @@
 {
+  "name": "paper",
+  "description": "Record your beautiful life.",
+  "version": "0.0.0",
+  "author": "Li Yechao<liyechao@yechao.xyz>",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "nodemon",
@@ -6,10 +11,28 @@
     "start": "cross-env NODE_ENV=production node dist/index.js"
   },
   "dependencies": {
+    "@apollo/client": "^3.6.10",
+    "@emotion/css": "^11.10.0",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@lexical/code": "^0.5.0",
+    "@lexical/file": "^0.5.0",
+    "@lexical/hashtag": "^0.5.0",
+    "@lexical/link": "^0.5.0",
+    "@lexical/list": "^0.5.0",
+    "@lexical/overflow": "^0.5.0",
+    "@lexical/react": "^0.5.0",
+    "@lexical/rich-text": "^0.5.0",
+    "@lexical/selection": "^0.5.0",
+    "@lexical/table": "^0.5.0",
     "cross-env": "^7.0.3",
+    "graphql": "^16.6.0",
+    "lexical": "^0.5.0",
     "next": "latest",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-use": "^17.4.0",
+    "uint8arrays": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.7.15",
