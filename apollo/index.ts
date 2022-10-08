@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ApolloClient, InMemoryCache } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { BatchHttpLink } from '@apollo/client/link/batch-http'
-import { GRAPHQL_URI } from '../constants'
 import { relayStylePagination } from '@apollo/client/utilities'
+import { GRAPHQL_URI } from '../constants'
 
 export function createClient() {
   const link = new BatchHttpLink({
@@ -38,3 +38,17 @@ export function createClient() {
   })
   return client
 }
+
+function createServerSideClient() {
+  const link = new HttpLink({
+    uri: GRAPHQL_URI,
+  })
+
+  const client = new ApolloClient({
+    link,
+    cache: new InMemoryCache(),
+  })
+  return client
+}
+
+export const SERVER_SIDE_CLIENT = createServerSideClient()

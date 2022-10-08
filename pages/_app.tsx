@@ -1,8 +1,9 @@
 import { ApolloProvider } from '@apollo/client'
 import { css, Global } from '@emotion/react'
-import { createClient } from 'apollo'
 import { AppProps } from 'next/app'
 import { useMemo } from 'react'
+import { IntlProvider } from 'react-intl'
+import { createClient } from '../apollo'
 
 export default function App({ Component, pageProps }: AppProps) {
   const apolloClient = useMemo(() => createClient(), [])
@@ -36,7 +37,9 @@ export default function App({ Component, pageProps }: AppProps) {
         `}
       />
 
-      <Component {...pageProps} />
+      <IntlProvider locale="en-US">
+        <Component {...pageProps} />
+      </IntlProvider>
     </ApolloProvider>
   )
 }

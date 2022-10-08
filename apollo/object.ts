@@ -17,10 +17,89 @@ import {
   LazyQueryHookOptions,
   MutationHookOptions,
   QueryHookOptions,
+  QueryOptions,
   useLazyQuery,
   useMutation,
   useQuery,
 } from '@apollo/client'
+
+const OBJECT_CONNECTION_QUERY = gql`
+  query ObjectConnection(
+    $userId: String!
+    $before: String
+    $after: String
+    $offset: Int
+    $first: Int
+    $last: Int
+    $public: Boolean
+  ) {
+    user(userId: $userId) {
+      id
+      objects(
+        before: $before
+        after: $after
+        offset: $offset
+        first: $first
+        last: $last
+        public: $public
+      ) {
+        edges {
+          cursor
+          node {
+            id
+            createdAt
+            updatedAt
+            meta
+            public
+          }
+        }
+        totalCount
+      }
+    }
+  }
+`
+
+export interface ObjectConnectionQueryVariables {
+  userId: string
+  before?: string
+  after?: string
+  first?: number
+  last?: number
+  offset?: number
+  public?: boolean
+}
+
+export function objectConnectionQueryOptions(
+  options: Omit<
+    QueryOptions<
+      ObjectConnectionQueryVariables,
+      { user: { id: string; objects: ObjectConnection } }
+    >,
+    'query'
+  >
+): QueryOptions<
+  ObjectConnectionQueryVariables,
+  { user: { id: string; objects: ObjectConnection } }
+> {
+  return {
+    ...options,
+    query: OBJECT_CONNECTION_QUERY,
+  }
+}
+
+export interface ObjectConnection {
+  edges: {
+    cursor: string
+    node: {
+      id: string
+      createdAt: string
+      updatedAt: string
+      meta?: { title?: string }
+      public?: boolean
+    }
+  }[]
+  totalCount: number
+}
 
 const OBJECT_QUERY = gql`
   query Object($userId: String!, $objectId: String!) {
@@ -39,22 +118,35 @@ const OBJECT_QUERY = gql`
   }
 `
 
+export interface ObjectQueryVariables {
+  userId: string
+  objectId: string
+}
+
+export function objectQueryOptions(
+  options: Omit<
+    QueryOptions<ObjectQueryVariables, { user: { id: string; object: Object_ } }>,
+    'query'
+  >
+): QueryOptions<ObjectQueryVariables, { user: { id: string; object: Object_ } }> {
+  return {
+    ...options,
+    query: OBJECT_QUERY,
+  }
+}
+
+export interface Object_ {
+  id: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+  meta?: { title?: string }
+  data?: string
+}
+
 export const useObject = (
   options?: QueryHookOptions<
-    {
-      user: {
-        id: string
-
-        object: {
-          id: string
-          userId: string
-          createdAt: string
-          updatedAt: string
-          meta?: { title?: string }
-          data?: string
-        }
-      }
-    },
+    { user: { id: string; object: Object_ } },
     { userId: string; objectId: string }
   >
 ) => {

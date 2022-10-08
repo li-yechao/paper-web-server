@@ -8,18 +8,20 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
-import { useCreateObject, useObjectUriQuery } from 'apollo/object'
-import { ImageNode } from 'components/lexical/nodes/ImageNode'
 import { EditorThemeClasses } from 'lexical'
 import { GetServerSidePropsContext } from 'next'
 import { ComponentProps, useMemo } from 'react'
 import { toString } from 'uint8arrays'
+import { SERVER_SIDE_CLIENT } from '../../apollo'
+import {
+  Object_,
+  objectQueryOptions,
+  useCreateObject,
+  useObjectUriQuery,
+} from '../../apollo/object'
+import { ImageNode } from '../../components/lexical/nodes/ImageNode'
 
-export default function Object({
-  object,
-}: {
-  object: { id: string; userId: string; meta?: { title?: string }; data?: string }
-}) {
+export default function Object({ object }: { object: Object_ }) {
   const initialConfig = useMemo<ComponentProps<typeof LexicalComposer>['initialConfig']>(
     () => ({
       namespace: 'editor',
@@ -112,16 +114,9 @@ export async function getServerSideProps(
 ) {
   const { user: userId, object: objectId } = context.params!
 
-  const res = await fetch('https://paper.yechao.xyz/graphql', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      operationName: 'Object',
-      variables: { userId, objectId },
-      query:
-        'query Object($userId: String!, $objectId: String!) {\n  user(userId: $userId) {\n    id\n    object(objectId: $objectId) {\n      id\n      userId\n      createdAt\n      updatedAt\n      meta\n      data\n      __typename\n    }\n    __typename\n  }\n}',
-    }),
-  }).then(res => res.json())
+  const res = await SERVER_SIDE_CLIENT.query(
+    objectQueryOptions({ variables: { userId, objectId } })
+  )
 
   const { object } = res.data.user
 
