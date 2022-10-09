@@ -16,6 +16,7 @@
     "prepare": "husky install",
     "lint": "eslint .",
     "format": "prettier --check .",
+    "test": "exit",
     "version": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "dependencies": {
