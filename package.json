@@ -1,7 +1,7 @@
 {
   "name": "paper",
   "description": "Record your beautiful life.",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Li Yechao<liyechao@yechao.xyz>",
   "repository": {
     "type": "git",
@@ -15,7 +15,8 @@
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "prepare": "husky install",
     "lint": "eslint .",
-    "format": "prettier --check ."
+    "format": "prettier --check .",
+    "version": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "dependencies": {
     "@apollo/client": "^3.6.10",
