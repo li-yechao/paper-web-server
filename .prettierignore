@@ -1,3 +1,4 @@
+.next/
 *.min.js
 dist/
 coverage/
