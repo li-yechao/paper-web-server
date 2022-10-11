@@ -19,6 +19,7 @@ import { FormattedTime } from 'react-intl'
 import { SERVER_SIDE_CLIENT } from '../../apollo'
 import { UserObjectConnection, userObjectConnectionQueryOptions } from '../../apollo/object'
 import AppBar from '../../components/AppBar'
+import Avatar from '../../components/Avatar'
 import Pagination from '../../components/Pagination'
 import { parseSafeIntegerOr } from '../../utils/number'
 
@@ -143,7 +144,7 @@ const _Time = styled.div`
 export function UserCard({ user }: { user: { id: string; name?: string } }) {
   return (
     <_UserCard>
-      <_Avatar />
+      <_Avatar userId={user.id} />
 
       <_UserName>{user.name?.trim() || user.id}</_UserName>
     </_UserCard>
@@ -156,11 +157,10 @@ const _UserCard = styled.div`
   align-items: center;
 `
 
-const _Avatar = styled.div`
+const _Avatar = styled(Avatar)`
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-color: rgba(128, 128, 128, 0.2);
 `
 
 const _UserName = styled.div`
