@@ -26,6 +26,7 @@ import { EditorThemeClasses } from 'lexical'
 import { GetServerSidePropsContext } from 'next'
 import { ComponentProps, useMemo } from 'react'
 import { toString } from 'uint8arrays'
+import { UserCard } from '.'
 import { SERVER_SIDE_CLIENT } from '../../apollo'
 import {
   Object_,
@@ -33,9 +34,16 @@ import {
   useCreateObject,
   useObjectUriQuery,
 } from '../../apollo/object'
+import AppBar from '../../components/AppBar'
 import { ImageNode } from '../../components/lexical/nodes/ImageNode'
 
-export default function Object({ object }: { object: Object_ }) {
+export default function Object({
+  user,
+  object,
+}: {
+  user: { id: string; name?: string }
+  object: Object_
+}) {
   const initialConfig = useMemo<ComponentProps<typeof LexicalComposer>['initialConfig']>(
     () => ({
       namespace: 'editor',
@@ -108,18 +116,24 @@ export default function Object({ object }: { object: Object_ }) {
   )
 
   return (
-    <_Container>
-      <_Article>
-        <ImageNode.Provider value={imageProviderValue}>
-          <LexicalComposer initialConfig={initialConfig}>
-            <RichTextPlugin
-              contentEditable={<ContentEditable testid="lexical-editor" />}
-              placeholder={<div />}
-            />
-          </LexicalComposer>
-        </ImageNode.Provider>
-      </_Article>
-    </_Container>
+    <>
+      <AppBar />
+
+      <_Container>
+        <UserCard user={user} />
+
+        <_Article>
+          <ImageNode.Provider value={imageProviderValue}>
+            <LexicalComposer initialConfig={initialConfig}>
+              <RichTextPlugin
+                contentEditable={<ContentEditable testid="lexical-editor" />}
+                placeholder={<div />}
+              />
+            </LexicalComposer>
+          </ImageNode.Provider>
+        </_Article>
+      </_Container>
+    </>
   )
 }
 
@@ -129,26 +143,27 @@ export async function getServerSideProps(
   const { user: userId, object: objectId } = context.params!
 
   const res = await SERVER_SIDE_CLIENT.query(
-    objectQueryOptions({ variables: { userId, objectId } })
+    objectQueryOptions({ variables: { userId, objectId }, fetchPolicy: 'network-only' })
   )
 
-  const { object } = res.data.user
+  const { user } = res.data
+  const { object } = user
 
   return {
     props: {
+      user,
       object,
     },
   }
 }
 
 const _Container = styled.div`
-  margin: 16px;
-`
-
-const _Article = styled.div`
   margin: 0 auto;
   max-width: 800px;
+  margin-top: 56px;
 `
+
+const _Article = styled.div``
 
 const theme: EditorThemeClasses = {
   text: {

@@ -25,6 +25,77 @@ import {
 
 const OBJECT_CONNECTION_QUERY = gql`
   query ObjectConnection(
+    $before: String
+    $after: String
+    $offset: Int
+    $first: Int
+    $last: Int
+    $orderBy: ObjectOrder
+  ) {
+    objects(
+      before: $before
+      after: $after
+      offset: $offset
+      first: $first
+      last: $last
+      orderBy: $orderBy
+    ) {
+      nodes {
+        id
+        createdAt
+        updatedAt
+        meta
+        public
+
+        user {
+          id
+          name
+        }
+      }
+      totalCount
+    }
+  }
+`
+
+export interface ObjectConnectionQueryVariables {
+  before?: string
+  after?: string
+  first?: number
+  last?: number
+  offset?: number
+  orderBy?: { direction: 'ASC' | 'DESC'; field: 'CREATED_AT' | 'UPDATED_AT' }
+}
+
+export function objectConnectionQueryOptions(
+  options: Omit<
+    QueryOptions<ObjectConnectionQueryVariables, { objects: ObjectConnection }>,
+    'query'
+  >
+): QueryOptions<ObjectConnectionQueryVariables, { objects: ObjectConnection }> {
+  return {
+    ...options,
+    query: OBJECT_CONNECTION_QUERY,
+  }
+}
+
+export interface ObjectConnection {
+  nodes: {
+    id: string
+    createdAt: string
+    updatedAt: string
+    meta?: { title?: string }
+    public?: boolean
+
+    user: {
+      id: string
+      name?: string
+    }
+  }[]
+  totalCount: number
+}
+
+const USER_OBJECT_CONNECTION_QUERY = gql`
+  query UserObjectConnection(
     $userId: String!
     $before: String
     $after: String
@@ -32,9 +103,12 @@ const OBJECT_CONNECTION_QUERY = gql`
     $first: Int
     $last: Int
     $public: Boolean
+    $orderBy: ObjectOrder
   ) {
     user(userId: $userId) {
       id
+      name
+
       objects(
         before: $before
         after: $after
@@ -42,6 +116,7 @@ const OBJECT_CONNECTION_QUERY = gql`
         first: $first
         last: $last
         public: $public
+        orderBy: $orderBy
       ) {
         edges {
           cursor
@@ -59,7 +134,7 @@ const OBJECT_CONNECTION_QUERY = gql`
   }
 `
 
-export interface ObjectConnectionQueryVariables {
+export interface UserObjectConnectionQueryVariables {
   userId: string
   before?: string
   after?: string
@@ -67,27 +142,28 @@ export interface ObjectConnectionQueryVariables {
   last?: number
   offset?: number
   public?: boolean
+  orderBy?: { direction: 'ASC' | 'DESC'; field: 'CREATED_AT' | 'UPDATED_AT' }
 }
 
-export function objectConnectionQueryOptions(
+export function userObjectConnectionQueryOptions(
   options: Omit<
     QueryOptions<
-      ObjectConnectionQueryVariables,
-      { user: { id: string; objects: ObjectConnection } }
+      UserObjectConnectionQueryVariables,
+      { user: { id: string; name?: string; objects: UserObjectConnection } }
     >,
     'query'
   >
 ): QueryOptions<
-  ObjectConnectionQueryVariables,
-  { user: { id: string; objects: ObjectConnection } }
+  UserObjectConnectionQueryVariables,
+  { user: { id: string; name?: string; objects: UserObjectConnection } }
 > {
   return {
     ...options,
-    query: OBJECT_CONNECTION_QUERY,
+    query: USER_OBJECT_CONNECTION_QUERY,
   }
 }
 
-export interface ObjectConnection {
+export interface UserObjectConnection {
   edges: {
     cursor: string
     node: {
@@ -105,6 +181,7 @@ const OBJECT_QUERY = gql`
   query Object($userId: String!, $objectId: String!) {
     user(userId: $userId) {
       id
+      name
 
       object(objectId: $objectId) {
         id
@@ -125,10 +202,10 @@ export interface ObjectQueryVariables {
 
 export function objectQueryOptions(
   options: Omit<
-    QueryOptions<ObjectQueryVariables, { user: { id: string; object: Object_ } }>,
+    QueryOptions<ObjectQueryVariables, { user: { id: string; name?: string; object: Object_ } }>,
     'query'
   >
-): QueryOptions<ObjectQueryVariables, { user: { id: string; object: Object_ } }> {
+): QueryOptions<ObjectQueryVariables, { user: { id: string; name?: string; object: Object_ } }> {
   return {
     ...options,
     query: OBJECT_QUERY,

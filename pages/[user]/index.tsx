@@ -15,29 +15,33 @@
 import styled from '@emotion/styled'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
-import { useMemo } from 'react'
 import { FormattedTime } from 'react-intl'
 import { SERVER_SIDE_CLIENT } from '../../apollo'
-import { ObjectConnection, objectConnectionQueryOptions } from '../../apollo/object'
+import { UserObjectConnection, userObjectConnectionQueryOptions } from '../../apollo/object'
+import AppBar from '../../components/AppBar'
+import Pagination from '../../components/Pagination'
+import { parseSafeIntegerOr } from '../../utils/number'
 
 const first = 20
 
 export default function User({
   offset,
-  user: { id: userId },
+  user,
   objectConnection,
 }: {
   offset: number
-  user: { id: string }
-  objectConnection: ObjectConnection
+  user: { id: string; name?: string }
+  objectConnection: UserObjectConnection
 }) {
   return (
-    <_Container>
-      <_Header>Articles</_Header>
+    <>
+      <AppBar />
 
-      <div>
+      <_Body>
+        <UserCard user={user} />
+
         {objectConnection.edges.map(edge => (
-          <Link passHref key={edge.node.id} href={`/${userId}/${edge.node.id}`}>
+          <Link passHref key={edge.node.id} href={`/${user.id}/${edge.node.id}`}>
             <_Item>
               <_Title>{edge.node.meta?.title || 'Untitled'}</_Title>
               <_Time>
@@ -54,77 +58,35 @@ export default function User({
             </_Item>
           </Link>
         ))}
-      </div>
 
-      <div>
-        <Pagination
-          path={`/${userId}`}
-          total={objectConnection.totalCount}
-          first={first}
-          offset={offset}
-        />
-      </div>
-    </_Container>
+        <div>
+          <Pagination
+            path={`/${user.id}`}
+            total={objectConnection.totalCount}
+            first={first}
+            offset={offset}
+          />
+        </div>
+      </_Body>
+    </>
   )
-}
-
-function Pagination({
-  path,
-  total,
-  first,
-  offset,
-}: {
-  path: string
-  total: number
-  first: number
-  offset?: number
-}) {
-  const { pages, currentPage, totalPage } = useMemo(() => {
-    const totalPage = Math.floor(total / first)
-    const currentPage = Math.floor((offset || 0) / first)
-    const rightPage = Math.min(currentPage + 4, totalPage)
-    const leftPage = Math.max(0, rightPage - 10)
-    const pages = new Array(rightPage + 1 - leftPage).fill(0).map((_, index) => leftPage + index)
-    return { pages, currentPage, totalPage }
-  }, [total, first, offset])
-
-  const getHref = (page: number) => (page > 0 ? `${path}?offset=${page * first}` : path)
-
-  return (
-    <_Pagination>
-      {currentPage > 0 && (
-        <Link passHref href={getHref(currentPage - 1)}>
-          <_Page>Previous</_Page>
-        </Link>
-      )}
-      {pages.map(page => (
-        <Link key={page} passHref href={getHref(page)}>
-          <_Page className={currentPage === page ? 'current' : ''}>{page + 1}</_Page>
-        </Link>
-      ))}
-      {currentPage < totalPage && (
-        <Link passHref href={getHref(currentPage + 1)}>
-          <_Page>Next</_Page>
-        </Link>
-      )}
-    </_Pagination>
-  )
-}
-
-function correctOffset(offset: any): number {
-  offset = Number(offset)
-  if (offset && offset > 0 && Number.isSafeInteger(offset)) {
-    return offset
-  }
-  return 0
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext<{ user: string }>) {
   const { user: userId } = context.params!
-  const offset = correctOffset(context.query.offset)
+  const offset = parseSafeIntegerOr(context.query.offset)
 
   const res = await SERVER_SIDE_CLIENT.query(
-    objectConnectionQueryOptions({ variables: { userId, first, offset, public: true } })
+    userObjectConnectionQueryOptions({
+      variables: {
+        userId,
+        first,
+        offset,
+        public: true,
+        orderBy: { direction: 'DESC', field: 'UPDATED_AT' },
+      },
+      fetchPolicy: 'network-only',
+    })
   )
 
   const { user } = res.data
@@ -139,26 +101,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext<{ us
   }
 }
 
-const _Container = styled.div`
+const _Body = styled.div`
   max-width: 800px;
   margin: 0 auto;
-`
-
-const _Header = styled.div`
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid var(--app-bar-color);
-  padding: 8px 0;
+  margin-top: 56px;
 `
 
 const _Item = styled.a`
   display: block;
   margin: 8px 0;
+  padding: 8px 0;
   cursor: pointer;
   text-decoration: none;
 
   &:hover {
-    opacity: 0.6;
+    opacity: 0.8;
   }
 
   &:visited {
@@ -172,6 +129,10 @@ const _Item = styled.a`
 
 const _Title = styled.div`
   font-size: 16px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 `
 
 const _Time = styled.div`
@@ -179,19 +140,35 @@ const _Time = styled.div`
   color: #999999;
 `
 
-const _Pagination = styled.div`
-  margin: 32px 0;
+export function UserCard({ user }: { user: { id: string; name?: string } }) {
+  return (
+    <_UserCard>
+      <_Avatar />
+
+      <_UserName>{user.name?.trim() || user.id}</_UserName>
+    </_UserCard>
+  )
+}
+
+const _UserCard = styled.div`
+  padding: 16px 0;
   display: flex;
   align-items: center;
-  justify-content: center;
 `
 
-const _Page = styled.a`
-  margin: 8px;
-  text-decoration: none;
-  color: #8ab4f8;
+const _Avatar = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: rgba(128, 128, 128, 0.2);
+`
 
-  &.current {
-    color: currentColor;
-  }
+const _UserName = styled.div`
+  font-size: 16px;
+  font-weight: bold;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 16px;
 `
