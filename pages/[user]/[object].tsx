@@ -88,7 +88,7 @@ export default function Object({
 
         <_Article>
           <ImageNode.Provider value={imageProviderValue}>
-            <LexicalEditor defaultValue={object.data} />
+            <LexicalEditor defaultValue={object.data} readOnly />
           </ImageNode.Provider>
         </_Article>
       </_Container>
