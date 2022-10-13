@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { CodeHighlightNode, CodeNode } from '@lexical/code'
+import { CodeHighlightNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { ListItemNode, ListNode } from '@lexical/list'
-import { CHECK_LIST, TRANSFORMERS } from '@lexical/markdown'
+import { CHECK_LIST, CODE as CODE_, TRANSFORMERS } from '@lexical/markdown'
 import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin'
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
@@ -33,6 +33,7 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $createParagraphNode, EditorState, LexicalNode } from 'lexical'
 import { ChangeEventHandler, ComponentProps, useCallback, useEffect, useMemo, useRef } from 'react'
+import CodeNode, { CODE } from './nodes/CodeNode'
 import { $createEquationNode, $isEquationNode, EquationNode } from './nodes/EquationNode'
 import { ImageNode } from './nodes/ImageNode'
 import CodeHighlightPlugin from './plugins/CodeHighlightPlugin'
@@ -135,7 +136,8 @@ export default function LexicalEditor(props: LexicalEditorProps) {
 
     return [
       CHECK_LIST,
-      ...TRANSFORMERS,
+      ...TRANSFORMERS.filter(i => i !== CODE_),
+      CODE,
       {
         dependencies: [EquationNode],
         export: exportEquation,

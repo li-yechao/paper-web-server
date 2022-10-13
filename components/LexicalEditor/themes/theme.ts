@@ -233,7 +233,8 @@ const theme: EditorThemeClasses = {
       font-size: 10px;
       text-transform: uppercase;
       position: absolute;
-      color: rgba(0, 0, 0, 0.5);
+      color: currentColor;
+      opacity: 0.6;
     }
   `,
   codeHighlight: {

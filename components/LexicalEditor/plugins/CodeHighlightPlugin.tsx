@@ -14,14 +14,66 @@
 
 import { registerCodeHighlighting } from '@lexical/code'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
+import { mergeRegister } from '@lexical/utils'
+import { $getNodeByKey, $isLineBreakNode, LexicalEditor } from 'lexical'
 import { useEffect } from 'react'
+import CodeNode, { $isCodeNode } from '../nodes/CodeNode'
 
 export default function CodeHighlightPlugin() {
   const [editor] = useLexicalComposerContext()
 
   useEffect(() => {
-    return registerCodeHighlighting(editor)
+    return mergeRegister(_registerCodeHighlighting(editor), registerCodeHighlighting(editor))
   }, [editor])
 
   return null
+}
+
+function _registerCodeHighlighting(editor: LexicalEditor) {
+  return editor.registerMutationListener(CodeNode, mutations => {
+    editor.update(() => {
+      for (const [key, type] of mutations) {
+        if (type !== 'destroyed') {
+          const node = $getNodeByKey(key)
+
+          if ($isCodeNode(node)) {
+            updateCodeGutter(node, editor)
+          }
+        }
+      }
+    })
+  })
+}
+
+function updateCodeGutter(node: CodeNode, editor: LexicalEditor) {
+  const codeElement = editor.getElementByKey(node.getKey())
+
+  if (codeElement === null) {
+    return
+  }
+
+  const children = node.getChildren()
+  const childrenLength = children.length
+
+  if (childrenLength === (codeElement as any).__cachedChildrenLength) {
+    // Avoid updating the attribute if the children length hasn't changed.
+    return
+  }
+
+  ;(codeElement as any).__cachedChildrenLength = childrenLength
+  let gutter = '1'
+  let count = 1
+
+  for (let i = 0; i < childrenLength; i++) {
+    if ($isLineBreakNode(children[i])) {
+      gutter += '\n' + ++count
+    } else {
+      let c = children[i]?.getTextContent().match(/\n/g)?.length || 0
+      for (; c > 0; c--) {
+        gutter += '\n' + ++count
+      }
+    }
+  }
+
+  codeElement.setAttribute('data-gutter', gutter)
 }
