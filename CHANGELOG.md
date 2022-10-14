@@ -1,3 +1,10 @@
+### [0.0.2-1](https://github.com/li-yechao/paper-web-server/compare/v0.0.2-0...v0.0.2-1) (2022-10-14)
+
+### Bug Fixes
+
+- custom `CodeNode` to fix export code and line number issue ([a1eb0ca](https://github.com/li-yechao/paper-web-server/commit/a1eb0ca59edb151f9c1897ec8a8baa48553a0d7f))
+- set editor read only ([c41fa7c](https://github.com/li-yechao/paper-web-server/commit/c41fa7c9e6b6f045a9b4bb399dd4e6866bb1479e))
+
 ### [0.0.2-0](https://github.com/li-yechao/paper-web-server/compare/v0.0.1...v0.0.2-0) (2022-10-11)
 
 ### Features
